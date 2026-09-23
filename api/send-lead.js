@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
     console.log("НОВЫЙ КОД SEND-LEAD ЗАПУЩЕН");
-    
+
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Method Not Allowed",
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Заявки с сайта <noreply@diklan.ru>",
+        from: "Заявки с сайта <noreply@mail.diklan.ru>",
         to: ["vladhoroshi25@icloud.com"],
         subject: "Новая заявка с сайта",
         text: leadText,
