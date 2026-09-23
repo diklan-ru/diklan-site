@@ -47,7 +47,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Website <onboarding@resend.dev>",
+        from: "Заявки с сайта <noreply@diklan.ru>",
         to: ["vladhoroshi25@icloud.com"],
         subject: "Новая заявка с сайта",
         text: leadText,
@@ -55,8 +55,12 @@ export default async function handler(req, res) {
     });
 
     if (!emailResponse.ok) {
-      throw new Error("Не удалось отправить заявку на email");
-    }
+  const errorText = await emailResponse.text();
+
+  return res.status(502).json({
+    error: `Resend ${emailResponse.status}: ${errorText}`,
+  });
+}
 
     return res.status(200).json({
       success: true,
