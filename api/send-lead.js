@@ -1,4 +1,6 @@
 export default async function handler(req, res) {
+    console.log("НОВЫЙ КОД SEND-LEAD ЗАПУЩЕН");
+    
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Method Not Allowed",
@@ -36,8 +38,30 @@ export default async function handler(req, res) {
       }
     );
 
+    const telegramText = await telegramResponse.text();
+
     if (!telegramResponse.ok) {
-      throw new Error("Не удалось отправить заявку в Telegram");
+      console.error(
+        "Telegram error:",
+        telegramResponse.status,
+        telegramText
+      );
+
+      return res.status(502).json({
+        error: `Telegram ${telegramResponse.status}: ${telegramText}`,
+      });
+    }
+
+    const telegramData = JSON.parse(telegramText);
+
+    if (!telegramData.ok) {
+      console.error("Telegram API error:", telegramData);
+
+      return res.status(502).json({
+        error: `Telegram API error: ${
+          telegramData.description || "неизвестная ошибка"
+        }`,
+      });
     }
 
     const emailResponse = await fetch("https://api.resend.com/emails", {
@@ -54,22 +78,24 @@ export default async function handler(req, res) {
       }),
     });
 
-    if (!emailResponse.ok) {
-  const errorText = await emailResponse.text();
+    const emailText = await emailResponse.text();
 
-  return res.status(502).json({
-    error: `Resend ${emailResponse.status}: ${errorText}`,
-  });
-}
+    if (!emailResponse.ok) {
+      console.error("Resend error:", emailResponse.status, emailText);
+
+      return res.status(502).json({
+        error: `Resend ${emailResponse.status}: ${emailText}`,
+      });
+    }
 
     return res.status(200).json({
       success: true,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Server error:", error);
 
     return res.status(500).json({
-      error: "Ошибка отправки заявки",
+      error: error.message || "Ошибка отправки заявки",
     });
   }
 }
