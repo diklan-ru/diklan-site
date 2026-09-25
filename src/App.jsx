@@ -308,11 +308,31 @@ function App() {
 
         <form
           className="contact-form"
-          onSubmit={(event) => {
-            event.preventDefault()
-            alert('Спасибо! Мы свяжемся с вами в ближайшее время.')
-            event.currentTarget.reset()
-          }}
+          onSubmit={async (event) => {
+  event.preventDefault()
+
+  const form = event.currentTarget
+  const formData = new FormData(form)
+
+  const response = await fetch('/api/send-lead', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: formData.get('name'),
+      phone: formData.get('phone'),
+      message: formData.get('message'),
+    }),
+  })
+
+  if (response.ok) {
+    alert('Спасибо! Мы свяжемся с вами в ближайшее время.')
+    form.reset()
+  } else {
+    alert('Не удалось отправить заявку. Попробуйте позвонить нам.')
+  }
+}}
         >
           <p className="eyebrow">ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ</p>
 
